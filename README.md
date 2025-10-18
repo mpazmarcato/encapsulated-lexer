@@ -2,6 +2,7 @@
 
 A simple Lexical Analyzer written in Rust, designed to tokenize arithmetic expressions with numbers and operators.
 This version is encapsulated, meaning the tokenizer logic is implemented using the Analisador struct with private fields, exposing public methods to interact with tokens safely.
+
 ---
 
 ## Project Structure
