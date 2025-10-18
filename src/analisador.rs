@@ -1,5 +1,3 @@
-use super::iteradores::*;
-
 pub struct Analisador<'a> {
     pub position: usize,
     pub next: &'a str,
