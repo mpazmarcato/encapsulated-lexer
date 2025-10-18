@@ -1,22 +1,23 @@
 mod iteradores;
 mod analisador;
-use iteradores::*;
 use analisador::*;
+use std::io::{self, Write};
 
 fn main() {
-    let exemplos = [
-        "450 + 20",
-        "450     +     20",
-        "450+20",
-        "0+-0",
-        "0 +++",
-        "10+a",
-        "10 + 20a",
-    ];
+    loop {
+        print!("Digite uma expressão (ou pressione Enter para sair): ");
+        io::stdout().flush().unwrap();
 
-    for entrada in exemplos {
-        println!("{}", entrada);
-        let mut analisador = Analisador::new(entrada);
+        let mut expression = String::new();
+        io::stdin().read_line(&mut expression).unwrap();
+        let expression = expression.trim();
+
+        if expression.is_empty() {
+            println!("Encerrando.");
+            break;
+        }
+
+        let mut analisador = Analisador::new(expression);
 
         loop {
             match analisador.proximo() {
