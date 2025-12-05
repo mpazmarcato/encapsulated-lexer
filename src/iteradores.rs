@@ -1,26 +1,34 @@
-#[allow(dead_code)]
 pub struct Chars<'a> {
     pub slice: &'a str,
 }
 
 pub struct CharIndices<'a> {
     pub slice: &'a str,
-    pub index: usize,
+    pub byte_index: usize,
+    pub char_index: usize,
 }
 
-#[allow(dead_code)]
 pub trait StrExt {
-    fn chars(&self) -> Chars<'_>;
-    fn char_indices(&self) -> CharIndices<'_>;
+    fn meus_chars(&self) -> Chars<'_>;
+    fn meus_char_indices(&self) -> CharIndices<'_>;
+    fn char_count(&self) -> usize;
 }
 
 impl StrExt for str {
-    fn chars(&self) -> Chars<'_> {
+    fn meus_chars(&self) -> Chars<'_> {
         Chars { slice: self }
     }
 
-    fn char_indices(&self) -> CharIndices<'_> {
-        CharIndices { slice: self, index: 0 }
+    fn meus_char_indices(&self) -> CharIndices<'_> {
+        CharIndices { 
+            slice: self, 
+            byte_index: 0,
+            char_index: 0,
+        }
+    }
+    
+    fn char_count(&self) -> usize {
+        self.chars().count()
     }
 }
 
@@ -28,41 +36,34 @@ impl<'a> Iterator for Chars<'a> {
     type Item = char;
 
     fn next(&mut self) -> Option<char> {
-        if self.slice.len() == 0 {
-            return None
+        if self.slice.is_empty() {
+            return None;
         }
 
         let ch = self.slice.chars().next().unwrap();
         let len = ch.len_utf8();
-
         self.slice = &self.slice[len..];
-        
         Some(ch)
     }
 }
 
 impl<'a> Iterator for CharIndices<'a> {
-    type Item = (usize, char);
+    type Item = (usize, usize, char); // (byte_index, char_index, char)
     
-    fn next(&mut self) -> Option<(usize, char)> {
-        if self.slice.len() == 0 {
-            return None
+    fn next(&mut self) -> Option<(usize, usize, char)> {
+        if self.slice.is_empty() {
+            return None;
         }
         
         let ch = self.slice.chars().next().unwrap();
         let ch_len = ch.len_utf8();
-        let index = self.index;
+        let byte_idx = self.byte_index;
+        let char_idx = self.char_index;
         
         self.slice = &self.slice[ch_len..];
-        self.index += ch_len;
+        self.byte_index += ch_len;
+        self.char_index += 1;
         
-        Some((index, ch))
+        Some((byte_idx, char_idx, ch))
     }
 }
-
-impl<'a> Clone for Chars<'a> {
-    fn clone(&self) -> Chars<'a> {
-        Chars { slice: self.slice }
-    }
-}
-    

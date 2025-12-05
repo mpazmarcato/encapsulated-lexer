@@ -1,6 +1,6 @@
 mod iteradores;
 mod analisador;
-use analisador::*;
+use analisador::Analisador;
 use std::io::{self, Write};
 
 fn main() {
@@ -8,31 +8,38 @@ fn main() {
         print!("Digite uma expressão (ou pressione Enter para sair): ");
         io::stdout().flush().unwrap();
 
-        let mut expression = String::new();
-        io::stdin().read_line(&mut expression).unwrap();
-        let expression = expression.trim();
+        let mut expressão = String::new();
+        io::stdin().read_line(&mut expressão).unwrap();
 
-        if expression.is_empty() {
+        let expressão = expressão.trim();
+        if expressão.is_empty() {
             println!("Encerrando.");
             break;
         }
+        println!("\nAnalisando: '{}'", expressão);
 
-        let mut analisador = Analisador::new(expression);
-
+        let mut analisador = Analisador::novo(expressão);
+        let mut resultado = Vec::new();
         loop {
-            match analisador.proximo() {
+            match analisador.próximo() {
                 Ok((pos, token)) => {
-                    println!("Token: {}, posição: {}", token, pos);
+                    resultado.push(format!("(\"{}\", {})", token, pos));
                 }
                 Err(None) => {
-                    println!("Fim da análise");
                     break;
                 }
                 Err(Some(pos)) => {
-                    println!("Erro na posição {}", pos);
+                    resultado.push(format!("Erro na posição {}", pos));
                     break;
                 }
             }
+        }
+
+        if !resultado.is_empty() {
+            let output = resultado.join(" ");
+            println!("{}", output);
+        } else {
+            println!("Nenhum token encontrado.");
         }
         println!();
     }

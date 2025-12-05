@@ -1,68 +1,73 @@
+use crate::iteradores::StrExt;
+
 pub struct Analisador<'a> {
-    pub position: usize,
-    pub next: &'a str,
+    pos: usize,     
+    prox: &'a str,   
 }
 
-impl <'a> Analisador<'a> {
-    pub fn new(entrada: &'a str) -> Self {
-        Analisador { position: 0, next: entrada }
+impl<'a> Analisador<'a> {
+    pub fn novo(entrada: &'a str) -> Self {
+        Analisador {
+            pos: 1,          
+            prox: entrada,
+        }
     }
-    pub fn proximo(&mut self) -> Result<(usize,&'a str), Option<usize>> {
-        let mut iter = self.next.char_indices();
-
+    
+    pub fn próximo(&mut self) -> Result<(usize, &str), Option<usize>> {
+        let mut iter = self.prox.meus_char_indices();
         let mut start_byte = 0;
+        let mut start_char = 0;
         let mut ch_opt = None;
-
-        for (i, c) in iter.by_ref() {
-            if !c.is_whitespace() && c != '🦀' {
-                start_byte = i;
-                ch_opt = Some(c);
+        
+        while let Some((byte_idx, char_idx, ch)) = iter.next() {
+            if ch.is_whitespace() || ch == '🦀' {
+                self.pos += 1;
+            } else {
+                start_byte = byte_idx;
+                start_char = char_idx;
+                ch_opt = Some(ch);
                 break;
             }
         }
-
         let ch = match ch_opt {
             Some(c) => c,
-            None => return Err(None),
+            None => {
+                self.prox = "";
+                return Err(None);
+            }
         };
-
-        let start_position = self.position + self.next[..start_byte].chars().count() + 1;
-
+        
+        let token_pos = self.pos;
         if ch.is_ascii_digit() {
             let mut end_byte = start_byte + ch.len_utf8();
-
-            for (_, c) in self.next[end_byte..].char_indices() {
-                if c.is_ascii_digit() {
-                    end_byte += c.len_utf8();
+            let mut char_count = 1; 
+            
+            while let Some((byte_idx, _, next_ch)) = iter.next() {
+                if next_ch.is_ascii_digit() {
+                    end_byte = byte_idx + next_ch.len_utf8();
+                    char_count += 1;
                 } else {
-                    let token = &self.next[start_byte..end_byte];
-                    let resto = &self.next[end_byte..];
-
-                    self.position += self.next[..end_byte].chars().count();
-                    self.next = resto;
-
-                    return Ok((start_position, token));
+                    break;
                 }
             }
-
-            let token = &self.next[start_byte..end_byte];
-            self.position += self.next[..end_byte].chars().count();
-            self.next = "";
-
-            return Ok((start_position, token));
+            
+            let token = &self.prox[start_byte..end_byte];
+            self.pos += char_count;
+            self.prox = &self.prox[end_byte..];
+            return Ok((token_pos, token));
         }
-
-        if "+-*/🐧".contains(ch) {
+        
+        if "+-*/".contains(ch) || ch == '🐧' {
             let end_byte = start_byte + ch.len_utf8();
-            let token = &self.next[start_byte..end_byte];
-            let resto = &self.next[end_byte..];
-
-            self.position += self.next[..end_byte].chars().count();
-            self.next = resto;
-
-            return Ok((start_position, token));
+            let token = &self.prox[start_byte..end_byte];
+            self.pos += 1;
+            self.prox = &self.prox[end_byte..];
+            return Ok((token_pos, token));
         }
-
-        Err(Some(start_position))
+        
+        let end_byte = start_byte + ch.len_utf8();
+        self.pos += 1;
+        self.prox = &self.prox[end_byte..];
+        Err(Some(token_pos))
     }
 }
