@@ -16,7 +16,7 @@ impl<'a> Analisador<'a> {
     pub fn próximo(&mut self) -> Result<(usize, &str), Option<usize>> {
         let mut iter = self.prox.meus_char_indices();
         let mut start_byte = 0;
-        let mut start_char = 0;
+        let mut _start_char = 0;
         let mut ch_opt = None;
         
         while let Some((byte_idx, char_idx, ch)) = iter.next() {
@@ -24,7 +24,7 @@ impl<'a> Analisador<'a> {
                 self.pos += 1;
             } else {
                 start_byte = byte_idx;
-                start_char = char_idx;
+                _start_char = char_idx;
                 ch_opt = Some(ch);
                 break;
             }

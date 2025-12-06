@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 pub struct Chars<'a> {
     pub slice: &'a str,
 }
@@ -8,6 +9,7 @@ pub struct CharIndices<'a> {
     pub char_index: usize,
 }
 
+#[allow(dead_code)]
 pub trait StrExt {
     fn meus_chars(&self) -> Chars<'_>;
     fn meus_char_indices(&self) -> CharIndices<'_>;
